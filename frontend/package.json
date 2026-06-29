@@ -13,5 +13,7 @@
     "react-dom": "18.2.0",
     "typescript": "^5.4.2"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@netlify/plugin-nextjs": "^5.15.12"
+  }
 }
