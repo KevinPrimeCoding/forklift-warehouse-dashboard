@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { Joyride } from 'react-joyride';
 
 type Forklift = {
   id: string;
@@ -43,6 +44,66 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000';
 const WS_BASE = process.env.NEXT_PUBLIC_WS_BASE || 'ws://localhost:8000/ws/events';
 
 export default function Page() {
+    const [tourRun, setTourRun] = useState(false);
+
+  const tourSteps = [
+    {
+      target: '.dashboard-header',
+      content:
+        'Welcome to the warehouse dashboard. This page provides real-time forklift tracking, task monitoring, alerts, and analytics.',
+    },
+    {
+      target: '.live-status',
+      content:
+        'This indicator shows whether the dashboard is connected to live WebSocket updates.',
+    },
+    {
+      target: '.metric-cards',
+      content:
+        'These cards summarize forklift count, active tasks, delayed tasks, and critical alerts.',
+    },
+    {
+      target: '.tracking-map',
+      content:
+        'This map displays the current locations and status of forklifts.',
+    },
+    {
+      target: '.alerts-section',
+      content:
+        'This section shows safety issues, errors, and recommended actions.',
+    },
+    {
+      target: '.heatmap-section',
+      content:
+        'The heatmap shows warehouse traffic density.',
+    },
+  ];
+
+
+  useEffect(() => {
+    const completed = localStorage.getItem(
+      'forklift-dashboard-tour'
+    );
+
+    if (!completed) {
+      setTourRun(true);
+    }
+  }, []);
+
+
+  /*function handleTour(data: any) {
+    if (
+      data.status === STATUS.FINISHED ||
+      data.status === STATUS.SKIPPED
+    ) {
+      localStorage.setItem(
+        'forklift-dashboard-tour',
+        'true'
+      );
+
+      setTourRun(false);
+    }
+  }*/
   const [forklifts, setForklifts] = useState<Forklift[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -115,22 +176,28 @@ export default function Page() {
   }, [forklifts, tasks]);
 
   return (
+    <>
+      <Joyride
+        steps={tourSteps}
+        run={tourRun}
+        continuous
+      />
     <main className="dashboard">
-      <section className="header">
+      <section className="header dashboard-header">
         <div>
           <h1>Real-Time Warehouse Event Dashboard</h1>
           <p>Live forklift tracking, task monitoring, alerting, and traffic heatmap analytics.</p>
         </div>
-        <span className="badge">{connected ? 'Live WebSocket Connected' : 'Connecting...'}</span>
+        <span className="badge live-status">{connected ? 'Live WebSocket Connected' : 'Connecting...'}</span>
       </section>
 
-      <section className="grid">
+      <section className="grid metric-cards">
         <Metric title="Forklifts" value={metrics.forklifts} />
         <Metric title="Active Tasks" value={metrics.activeTasks} />
         <Metric title="Delayed Tasks" value={metrics.delayed} />
         <Metric title="Critical Alerts" value={metrics.criticalAlerts} />
 
-        <div className="card map">
+        <div className="card map tracking-map">
           <h2>Live Forklift Tracking</h2>
           <div className="warehouse-map">
             {forklifts.map((forklift) => (
@@ -146,7 +213,7 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="card side">
+        <div className="card side alerts-section">
           <h2>Alerts</h2>
           <div className="alerts-list">
             {alerts.length === 0 && <p>No alerts yet.</p>}
@@ -172,7 +239,7 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="card full">
+        <div className="card full heatmap-section">
           <h2>Task Status Monitoring</h2>
           <table>
             <thead>
@@ -212,6 +279,7 @@ export default function Page() {
         </div>
       </section>
     </main>
+    </>
   );
 }
 
