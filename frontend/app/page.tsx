@@ -44,7 +44,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000';
 const WS_BASE = process.env.NEXT_PUBLIC_WS_BASE || 'ws://localhost:8000/ws/events';
 
 export default function Page() {
-    const [tourRun, setTourRun] = useState(false);
+  const [tourRun, setTourRun] = useState(false);
 
   const tourSteps = [
     {
@@ -109,6 +109,7 @@ export default function Page() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [heatmap, setHeatmap] = useState<HeatCell[]>([]);
   const [connected, setConnected] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
 
   useEffect(() => {
     async function loadInitialData() {
@@ -182,103 +183,192 @@ export default function Page() {
         run={tourRun}
         continuous
       />
-    <main className="dashboard">
-      <section className="header dashboard-header">
-        <div>
-          <h1>Real-Time Warehouse Event Dashboard</h1>
-          <p>Live forklift tracking, task monitoring, alerting, and traffic heatmap analytics.</p>
-        </div>
-        <span className="badge live-status">{connected ? 'Live WebSocket Connected' : 'Connecting...'}</span>
-      </section>
-
-      <section className="grid metric-cards">
-        <Metric title="Forklifts" value={metrics.forklifts} />
-        <Metric title="Active Tasks" value={metrics.activeTasks} />
-        <Metric title="Delayed Tasks" value={metrics.delayed} />
-        <Metric title="Critical Alerts" value={metrics.criticalAlerts} />
-
-        <div className="card map tracking-map">
-          <h2>Live Forklift Tracking</h2>
-          <div className="warehouse-map">
-            {forklifts.map((forklift) => (
-              <div
-                key={forklift.id}
-                className={`forklift ${forklift.status}`}
-                title={`${forklift.id} - ${forklift.status} - ${forklift.battery}%`}
-                style={{ left: `${forklift.x}%`, top: `${forklift.y / 60 * 100}%` }}
-              >
-                {forklift.id.replace('FL-', '')}
-              </div>
-            ))}
+      <main
+        className={
+          darkMode
+            ?
+            "dashboard dark"
+            :
+            "dashboard light"
+        }
+      >
+        <section className="header dashboard-header">
+          <div>
+            <h1>Real-Time Warehouse Event Dashboard</h1>
+            <p>Live forklift tracking, task monitoring, alerting, and traffic heatmap analytics.</p>
           </div>
-        </div>
+          <div className="header-actions">
 
-        <div className="card side alerts-section">
-          <h2>Alerts</h2>
-          <div className="alerts-list">
-            {alerts.length === 0 && <p>No alerts yet.</p>}
-            {alerts.slice(0, 8).map((alert) => (
-              <div className="alert" key={alert.id}>
-                <div className="alert-top">
-                  <span className={`severity ${alert.severity}`}>{alert.severity}</span>
-                  <span className="alert-time">
-                    {new Date(alert.created_at).toLocaleTimeString()}
-                  </span>
+            <span className="badge live-status">
+              {
+                connected
+                  ?
+                  'Live WebSocket Connected'
+                  :
+                  'Connecting...'
+              }
+            </span>
+
+
+            <button
+              className="theme-button"
+              onClick={() => setDarkMode(!darkMode)}
+            >
+              {
+                darkMode
+                  ?
+                  "☀️ Bright"
+                  :
+                  "🌙 Dark"
+              }
+            </button>
+
+          </div>
+        </section>
+
+        <section className="grid metric-cards">
+          <Metric title="Forklifts" value={metrics.forklifts} />
+          <Metric title="Active Tasks" value={metrics.activeTasks} />
+          <Metric title="Delayed Tasks" value={metrics.delayed} />
+          <Metric title="Critical Alerts" value={metrics.criticalAlerts} />
+
+          <div className="card map tracking-map">
+            <h2>Live Forklift Tracking</h2>
+            <div className="warehouse-map">
+
+              {/* warehouse grid labels */}
+
+              <div className="zone-label z-a1">A1</div>
+              <div className="zone-label z-a2">A2</div>
+              <div className="zone-label z-a3">A3</div>
+
+              <div className="zone-label z-b1">B1</div>
+              <div className="zone-label z-b2">B2</div>
+              <div className="zone-label z-b3">B3</div>
+
+              <div className="zone-label z-c1">C1</div>
+              <div className="zone-label z-c2">C2</div>
+
+
+              {/* shelves */}
+
+              <div className="rack rack-left">
+                Rack A
+              </div>
+
+              <div className="rack rack-middle">
+                Rack B
+              </div>
+
+
+              {/* special areas */}
+
+              <div className="dock-area">
+                📦 DOCK
+              </div>
+
+
+              <div className="charge-area">
+                🔋 CHARGING
+              </div>
+
+
+
+              {/* forklifts */}
+
+              {forklifts.map((forklift) => (
+
+                <div
+
+                  key={forklift.id}
+
+                  className={
+                    `forklift ${forklift.status}`
+                  }
+
+
+                  style={{
+                    left: `${forklift.x}%`,
+                    top: `${forklift.y / 60 * 100}%`
+                  }}
+
+                >
+
+                  🚜
+
                 </div>
 
-                <p><strong>{alert.message}</strong></p>
-                <p>Forklift: {alert.forklift_id ?? '-'}</p>
-                <p>Operator: {alert.operator ?? '-'}</p>
-                <p>Status: {alert.status ?? '-'}</p>
-                <p>Battery: {alert.battery ?? '-'}%</p>
-                <p>Task: {alert.task_id ?? '-'}</p>
-                <p>Zone: {alert.zone ?? '-'}</p>
-                <p>Action: {alert.recommendation ?? '-'}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="card full heatmap-section">
-          <h2>Task Status Monitoring</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Task</th>
-                <th>Type</th>
-                <th>Forklift</th>
-                <th>Zone</th>
-                <th>Status</th>
-                <th>Priority</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tasks.map((task) => (
-                <tr key={task.id}>
-                  <td>{task.id}</td>
-                  <td>{task.type}</td>
-                  <td>{task.forklift_id}</td>
-                  <td>{task.zone}</td>
-                  <td><span className="status">{task.status}</span></td>
-                  <td><span className={`priority ${task.priority}`}>{task.priority}</span></td>
-                </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
 
-        <div className="card full">
-          <h2>Warehouse Heatmap Visualization</h2>
-          <div className="heatmap">
-            {heatmap.map((cell) => (
-              <div className={`heat-cell density-${Math.min(5, cell.density)}`} key={`${cell.x}-${cell.y}`}>
-                {cell.density}
-              </div>
-            ))}
+
+            </div>
           </div>
-        </div>
-      </section>
-    </main>
+          <div className="card side alerts-section">
+            <h2>Alerts</h2>
+            <div className="alerts-list">
+              {alerts.length === 0 && <p>No alerts yet.</p>}
+              {alerts.slice(0, 8).map((alert) => (
+                <div className="alert" key={alert.id}>
+                  <div className="alert-top">
+                    <span className={`severity ${alert.severity}`}>{alert.severity}</span>
+                    <span className="alert-time">
+                      {new Date(alert.created_at).toLocaleTimeString()}
+                    </span>
+                  </div>
+
+                  <p><strong>{alert.message}</strong></p>
+                  <p>Forklift: {alert.forklift_id ?? '-'}</p>
+                  <p>Operator: {alert.operator ?? '-'}</p>
+                  <p>Status: {alert.status ?? '-'}</p>
+                  <p>Battery: {alert.battery ?? '-'}%</p>
+                  <p>Task: {alert.task_id ?? '-'}</p>
+                  <p>Zone: {alert.zone ?? '-'}</p>
+                  <p>Action: {alert.recommendation ?? '-'}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card full heatmap-section">
+            <h2>Task Status Monitoring</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Task</th>
+                  <th>Type</th>
+                  <th>Forklift</th>
+                  <th>Zone</th>
+                  <th>Status</th>
+                  <th>Priority</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tasks.map((task) => (
+                  <tr key={task.id}>
+                    <td>{task.id}</td>
+                    <td>{task.type}</td>
+                    <td>{task.forklift_id}</td>
+                    <td>{task.zone}</td>
+                    <td><span className="status">{task.status}</span></td>
+                    <td><span className={`priority ${task.priority}`}>{task.priority}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="card full">
+            <h2>Warehouse Heatmap Visualization</h2>
+            <div className="heatmap">
+              {heatmap.map((cell) => (
+                <div className={`heat-cell density-${Math.min(5, cell.density)}`} key={`${cell.x}-${cell.y}`}>
+                  {cell.density}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main >
     </>
   );
 }

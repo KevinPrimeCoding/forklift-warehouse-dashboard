@@ -21,11 +21,18 @@ app.add_middleware(
 WAREHOUSE_WIDTH = 100
 WAREHOUSE_HEIGHT = 60
 
+CHARGE_STATION = {
+    "x": 90,
+    "y": 50
+}
+
 class Forklift(BaseModel):
     id: str
     operator: str
     x: float
     y: float
+    target_x: float = 50
+    target_y: float = 30
     status: str
     battery: int
     last_seen: str
@@ -64,7 +71,13 @@ tasks: Dict[str, Task] = {}
 alerts: List[Alert] = []
 clients: Set[WebSocket] = set()
 
-statuses = ["idle", "moving", "loading", "error"]
+statuses = [
+    "idle",
+    "moving",
+    "loading",
+    "charging",
+    "error"
+]
 task_statuses = ["pending", "in-progress", "completed", "delayed"]
 zones = ["A1", "A2", "B1", "B2", "C1", "C2", "Dock", "Storage"]
 task_types = ["pickup", "delivery", "inventory-move", "assignment"]
@@ -73,6 +86,27 @@ task_types = ["pickup", "delivery", "inventory-move", "assignment"]
 def now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
+def move_towards(
+    forklift,
+    target_x,
+    target_y
+):
+
+    speed = 3
+
+
+    if forklift.x < target_x:
+        forklift.x += speed
+
+    if forklift.x > target_x:
+        forklift.x -= speed
+
+
+    if forklift.y < target_y:
+        forklift.y += speed
+
+    if forklift.y > target_y:
+        forklift.y -= speed
 
 def seed_data() -> None:
     if forklifts:
@@ -173,12 +207,99 @@ async def simulate_events() -> None:
     while True:
         await asyncio.sleep(1.2)
         forklift = random.choice(list(forklifts.values()))
-        forklift.x = max(0, min(WAREHOUSE_WIDTH, forklift.x + random.uniform(-6, 6)))
-        forklift.y = max(0, min(WAREHOUSE_HEIGHT, forklift.y + random.uniform(-4, 4)))
-        forklift.status = random.choices(statuses, weights=[20, 55, 20, 5])[0]
-        forklift.battery = max(5, forklift.battery - random.choice([0, 0, 1]))
-        forklift.last_seen = now()
-        forklifts[forklift.id] = forklift
+        if forklift.status == "charging":
+
+            distance = (
+        abs(forklift.x - CHARGE_STATION["x"])
+        +
+        abs(forklift.y - CHARGE_STATION["y"])
+    )
+
+
+            if distance > 5:
+
+                move_towards(
+            forklift,
+            CHARGE_STATION["x"],
+            CHARGE_STATION["y"]
+        )
+
+
+            else:
+
+        # At charging station, charge
+
+                forklift.battery += 5
+
+
+                if forklift.battery >= 100:
+
+                    forklift.battery = 100
+
+                    forklift.status = "idle"
+
+            # choose new destination after charging
+                    forklift.target_x = random.uniform(
+                5,
+                WAREHOUSE_WIDTH - 5
+            )
+
+                    forklift.target_y = random.uniform(
+                5,
+                WAREHOUSE_HEIGHT - 5
+            )
+
+
+
+        elif forklift.battery <= 15:
+
+
+    # Battery low, go charge
+
+            forklift.status = "charging"
+
+            forklift.target_x = CHARGE_STATION["x"]
+
+            forklift.target_y = CHARGE_STATION["y"]
+
+
+
+        else:
+
+
+    # Normal operation
+
+            forklift.x = max(
+        0,
+        min(
+            WAREHOUSE_WIDTH,
+            forklift.x + random.uniform(-6,6)
+        )
+    )
+
+
+            forklift.y = max(
+        0,
+        min(
+            WAREHOUSE_HEIGHT,
+            forklift.y + random.uniform(-4,4)
+        )
+    )
+
+
+            forklift.status = random.choice(
+        [
+            "idle",
+            "moving",
+            "loading"
+        ]
+    )
+
+
+            forklift.battery = max(
+        5,
+        forklift.battery - 1
+    )
 
         await broadcast(WarehouseEvent(
             event_id=str(uuid4()),

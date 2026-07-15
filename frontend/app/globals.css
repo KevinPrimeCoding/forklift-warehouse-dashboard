@@ -29,6 +29,9 @@ button, input { font: inherit; }
 .idle { background: #64748b; }
 .moving { background: #2563eb; }
 .loading { background: #d97706; }
+.charging {
+    background:#22c55e;
+}
 .error { background: #dc2626; animation: pulse 1s infinite; }
 @keyframes pulse { 0% { opacity: 1 } 50% { opacity: .55 } 100% { opacity: 1 } }
 table { width: 100%; border-collapse: collapse; }
@@ -61,3 +64,405 @@ th { color: #94a3b8; font-weight: 500; }
 .density-3 { background: #854d0e; }
 .density-4, .density-5 { background: #991b1b; }
 @media (max-width: 900px) { .metric, .map, .side, .full { grid-column: span 12; } .header { align-items: flex-start; flex-direction: column; } }
+/* ===== Warehouse Map Upgrade ===== */
+
+
+.warehouse-map{
+
+  background:
+  linear-gradient(
+    rgba(30,41,59,.8),
+    rgba(15,23,42,.9)
+  );
+
+  overflow:hidden;
+
+}
+
+
+
+/* grid labels */
+
+.zone-label{
+
+  position:absolute;
+
+  color:#64748b;
+
+  font-size:12px;
+
+  font-weight:600;
+
+}
+
+
+.z-a1{
+  left:8%;
+  top:8%;
+}
+
+.z-a2{
+  left:35%;
+  top:8%;
+}
+
+.z-a3{
+  left:70%;
+  top:8%;
+}
+
+
+.z-b1{
+  left:8%;
+  top:45%;
+}
+
+.z-b2{
+  left:35%;
+  top:45%;
+}
+
+.z-b3{
+  left:70%;
+  top:45%;
+}
+
+
+.z-c1{
+  left:8%;
+  bottom:10%;
+}
+
+.z-c2{
+  left:35%;
+  bottom:10%;
+}
+
+
+
+
+
+/* shelves */
+
+.rack{
+
+  position:absolute;
+
+  background:
+  repeating-linear-gradient(
+    90deg,
+    #334155,
+    #334155 8px,
+    #475569 8px,
+    #475569 12px
+  );
+
+
+  border:
+  1px solid #64748b;
+
+
+  border-radius:8px;
+
+
+  color:#cbd5e1;
+
+  font-size:12px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+}
+
+
+
+.rack-left{
+
+  width:80px;
+
+  height:240px;
+
+  left:22%;
+
+  top:20%;
+
+}
+
+
+
+.rack-middle{
+
+  width:80px;
+
+  height:240px;
+
+  left:55%;
+
+  top:20%;
+
+}
+/* =====================
+   Theme Button
+===================== */
+
+.theme-button{
+
+    border:none;
+
+    padding:10px 16px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    background:#2563eb;
+
+    color:white;
+
+    font-weight:600;
+
+}
+
+
+/* =====================
+   Bright Mode
+===================== */
+
+
+.dashboard.light{
+
+    background:#f8fafc;
+
+    color:#0f172a;
+
+    min-height:100vh;
+
+}
+
+
+
+.dashboard.light .card{
+
+    background:white;
+
+    border-color:#cbd5e1;
+
+    color:#0f172a;
+
+}
+
+
+
+.dashboard.light h1,
+.dashboard.light h2,
+.dashboard.light h3{
+
+    color:#0f172a;
+
+}
+
+
+
+.dashboard.light p{
+
+    color:#475569;
+
+}
+
+
+
+/* map */
+
+.dashboard.light .warehouse-map{
+
+    background:
+
+    linear-gradient(
+        #e2e8f0,
+        #cbd5e1
+    );
+
+    border-color:#94a3b8;
+
+}
+
+
+
+/* rack */
+
+.dashboard.light .rack{
+
+    background:
+
+    repeating-linear-gradient(
+        90deg,
+        #94a3b8,
+        #94a3b8 8px,
+        #cbd5e1 8px,
+        #cbd5e1 12px
+    );
+
+
+}
+
+
+
+/* alerts */
+
+.dashboard.light .alert{
+
+    background:#f1f5f9;
+
+    color:#0f172a;
+
+}
+
+
+
+/* task cards */
+
+.dashboard.light .task-card{
+
+    background:#f8fafc;
+
+    border-color:#cbd5e1;
+
+}
+
+
+
+
+
+/* dock */
+
+
+.dock-area{
+
+  position:absolute;
+
+  left:5%;
+
+  bottom:8%;
+
+  width:90px;
+
+  height:50px;
+
+  border:
+
+  2px dashed #38bdf8;
+
+
+  color:#38bdf8;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  font-size:12px;
+
+}
+
+
+
+
+
+/* charging */
+
+
+.charge-area{
+
+  position:absolute;
+
+  right:5%;
+
+  bottom:8%;
+
+  width:100px;
+
+  height:50px;
+
+
+  border:
+
+  2px dashed #22c55e;
+
+
+  color:#22c55e;
+
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+
+  font-size:12px;
+
+}
+
+
+
+
+
+/* forklift icon */
+
+
+.forklift{
+
+  width:34px;
+
+  height:34px;
+
+  border-radius:8px;
+
+  font-size:18px;
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+
+  cursor:pointer;
+
+
+  transform:
+  translate(-50%,-50%);
+
+}
+
+
+.forklift.moving{
+
+  background:#2563eb;
+
+}
+
+
+.forklift.loading{
+
+  background:#f59e0b;
+
+}
+
+
+.forklift.idle{
+
+  background:#475569;
+
+}
+
+
+.forklift.error{
+
+  background:#dc2626;
+
+  animation:pulse 1s infinite;
+
+}
